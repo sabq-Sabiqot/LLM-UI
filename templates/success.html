@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Thanks!! | Modeling Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen">
+    <div class="flex flex-col items-center justify-center">
+        <svg class="h-20 w-20 text-emerald-200 dark:text-emerald-800 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+</svg>
+        <h1 class="text-sky-800 dark:text-sky-200 font-extrabold text-xl mb-4">Thanks!!</h1>
+        <p class="text-gray-800 dark:text-white mb-4">Your message has been successfully received. We will get back to you shortly.</p>
+        <p class="text-gray-800 dark:text-white mb-4">You will be redirected to the <a href="/">homepage</a> in a few seconds, or click this button below.</p>
+       <button class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded transition text-center">Go to Home</button>
+    </div>
+    <script src=../statics/script-sub.js></script>
+    <script>
+            setTimeout(function() {
+                window.location.href = '/'; // Redirecting to the homepage
+            }, 5000); // Redirect after 5 seconds
+    </script>
+</body>
+</html>

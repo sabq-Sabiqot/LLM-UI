@@ -1,0 +1,13 @@
+User types in browser
+      ↓
+USER_INTEFACE.py  (Flask web server, port 5000)
+      ↓  POST /chat
+CONNECTION.py  (LLM connector + param extractor)
+      ↓  requests.post to LLM
+Ollama / LM Studio / llama.cpp  (local model)
+      ↓  JSON response
+CONNECTION.py  parses params, validates, builds mission dict
+      ↓  if user says "run"
+POST_TRAIN.run(mission)
+      ↓
+Full UAV pipeline

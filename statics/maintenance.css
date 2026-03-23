@@ -1,0 +1,128 @@
+/* Base Styles (Mobile First) - Applies to phones and smaller screens */
+body {
+    font-family: 'Roboto', sans-serif;
+    /* Tailwind classes handle background and flex centering */
+}
+
+.maintenance-container {
+    max-width: 90%; /* Limit width on small screens */
+    padding: 1.5rem; /* Add some padding */
+}
+
+.maintenance-heading-primary {
+    font-size: 2.25rem; /* text-4xl equivalent */
+    line-height: 2.5rem;
+}
+
+.maintenance-heading-secondary {
+    font-size: 1.75rem; /* text-3xl equivalent */
+    line-height: 2.25rem;
+}
+
+.maintenance-paragraph {
+    font-size: 1rem; /* text-base equivalent */
+    line-height: 1.5rem;
+}
+
+.maintenance-buttons {
+    gap: 1rem; /* Space between stacked buttons */
+}
+
+.maintenance-button {
+    width: 100%; /* Buttons take full width on small screens */
+    margin-bottom: 0.5rem; /* Add a little space between stacked buttons */
+}
+
+/* Dark Mode styles (using the dark class on body) */
+body.dark .maintenance-heading-primary,
+body.dark .maintenance-heading-secondary {
+    color: #ffffff; /* White for dark mode headings */
+}
+
+body.dark .maintenance-paragraph {
+    color: #d1d5db; /* Gray-300 for dark mode paragraphs */
+}
+
+/* --- Media Queries for Responsiveness --- */
+
+/* Tablet (Medium Screens: 641px and up) */
+@media (min-width: 641px) {
+    .maintenance-container {
+        max-width: 600px; /* Max width for tablets */
+        padding: 2rem;
+    }
+
+    .maintenance-heading-primary {
+        font-size: 2.5rem; /* Slightly larger for tablets */
+        line-height: 3rem;
+    }
+
+    .maintenance-heading-secondary {
+        font-size: 2rem; /* Slightly larger for tablets */
+        line-height: 2.5rem;
+    }
+
+    .maintenance-paragraph {
+        font-size: 1.125rem; /* text-lg equivalent */
+        line-height: 1.75rem;
+    }
+
+    .maintenance-buttons {
+        flex-direction: row; /* Buttons in a row */
+        justify-content: center; /* Center buttons horizontally */
+        gap: 1rem; /* Space between horizontal buttons */
+    }
+
+    .maintenance-button {
+        width: auto; /* Buttons take natural width */
+        flex-grow: 1; /* Allow buttons to grow and share space */
+        max-width: 200px; /* Limit individual button width */
+        margin-bottom: 0; /* Remove bottom margin when in a row */
+    }
+}
+
+/* Monitor (Large Screens: 1025px and up) */
+@media (min-width: 1025px) {
+    .maintenance-container {
+        max-width: 800px; /* Max width for monitors */
+        padding: 3rem;
+    }
+
+    .maintenance-heading-primary {
+        font-size: 3rem; /* Even larger for monitors */
+        line-height: 3.5rem;
+    }
+
+    .maintenance-heading-secondary {
+        font-size: 2.5rem; /* Even larger for monitors */
+        line-height: 3rem;
+    }
+
+    .maintenance-paragraph {
+        font-size: 1.25rem; /* text-xl equivalent */
+        line-height: 1.75rem;
+    }
+}
+
+/* Big Monitor (Extra Large Screens: 1441px and up) */
+@media (min-width: 1441px) {
+    .maintenance-container {
+        max-width: 960px; /* Max width for big monitors */
+        padding: 4rem;
+    }
+
+    .maintenance-heading-primary {
+        font-size: 3.5rem; /* Max font size for very large screens */
+        line-height: 4rem;
+    }
+
+    .maintenance-heading-secondary {
+        font-size: 3rem; /* Max font size for very large screens */
+        line-height: 3.5rem;
+    }
+
+    .maintenance-paragraph {
+        font-size: 1.375rem; /* text-2xl equivalent */
+        line-height: 2rem;
+    }
+}

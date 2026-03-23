@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Maintenance | Modeling Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Stylesheet (linked after Tailwind to allow overrides) -->
+    <link href="../statics/maintenance.css" rel="stylesheet">
+    <link href="../assets/images/favicon.ico" rel="icon" type="image/x-icon">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
+    <div class="maintenance-container flex flex-col items-center justify-center text-center">
+        <svg class="h-20 w-20 text-red-500 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+        </svg>
+        <h1 class="maintenance-heading-primary font-bold text-gray-800 dark:text-white mb-2">Maintenance Mode</h1>
+        <h2 class="maintenance-heading-secondary font-bold text-gray-800 dark:text-white mb-4">Under Scheduled
+            Maintenance.</h2>
+        <p class="maintenance-paragraph text-gray-600 dark:text-gray-300 mb-4">
+            Our main page website is currently undergoing scheduled maintenance to improve your experience.
+        </p>
+        <p class="maintenance-paragraph text-gray-600 dark:text-gray-300 mb-4">
+            We apologize for any inconvenience. If you need access to another page, you can click a button below.
+        </p>
+        <p class="maintenance-paragraph text-gray-600 dark:text-gray-300 mb-6">
+            We'll be back online shortly. Thank you for your patience!
+        </p>
+        <p class="maintenance-paragraph text-gray-600 dark:text-gray-300 mb-8">— The Aotamata Team.</p>
+
+        <div class="maintenance-buttons flex flex-col w-full items-center">
+            <a href="form.html"
+                class="maintenance-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded transition text-center">Go
+                to Form Request</a>
+            <a href="privacypolicy.html"
+                class="maintenance-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded transition text-center">Go
+                to Privacy Policy</a>
+            <a href="termsofservice.html"
+                class="maintenance-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded transition text-center">Go
+                to Terms of Services</a>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+<! doctypehtml>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UAV Mission Designer</title>
+
+  <link rel="stylesheet" type="text/css" href="../statics/index.css" >
+
+  </head>
+  <body>
+
+  <header>
+    <div>
+      <h1>UAV Mission Designer</h1>
+      <p>Describe your mission in plain English &mdash; AI extracts the parameters</p>
+    </div>
+    <div class="header-right">
+      <span id="session-badge" class="session-badge">Session --</span>
+      <div id="status-dot" class="status-dot"></div>
+      <span id="status-text" class="status-text">Checking LLM...</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ── Sidebar: live param display ── -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Extracted Parameters</div>
+      <div class="param-table" id="param-table">
+        <div class="param-row">
+          <span class="param-key">payload_kg</span>
+          <span class="param-value unset" id="p-payload_kg">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">cruise_speed</span>
+          <span class="param-value unset" id="p-cruise_speed">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">altitude_m</span>
+          <span class="param-value unset" id="p-altitude_m">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">reynolds</span>
+          <span class="param-value unset" id="p-reynolds">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">mach</span>
+          <span class="param-value unset" id="p-mach">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">alpha (AoA)</span>
+          <span class="param-value unset" id="p-alpha">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">airfoil_method</span>
+          <span class="param-value unset" id="p-airfoil_method">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">AR</span>
+          <span class="param-value unset" id="p-AR">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">optimize</span>
+          <span class="param-value unset" id="p-optimize">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">objective</span>
+          <span class="param-value unset" id="p-objective">--</span>
+        </div>
+        <div class="param-row">
+          <span class="param-key">n_calls</span>
+          <span class="param-value unset" id="p-n_calls">--</span>
+        </div>
+      </div>
+
+      <button class="run-btn" id="run-btn" onclick="runPipeline()">
+        &#9654; Run UAV Pipeline
+      </button>
+      <button class="reset-btn" onclick="resetChat()">Reset conversation</button>
+    </aside>
+
+    <!-- ── Chat area ── -->
+    <div class="chat-area">
+      <div id="messages">
+        <div class="msg system">Start by describing your UAV mission below.</div>
+        <div class="msg assistant">
+          Hello! I am your UAV design assistant.<br><br>
+          Describe your mission in plain English and I will extract the
+          engineering parameters needed to design your airfoil.<br><br>
+          For example:<br>
+          <em>"Design a UAV for 30 kg payload at 18 m/s, 500 m altitude"</em><br>
+          <em>"Long endurance drone, 50 kg, cruising at 90 km/h at 1000 ft"</em>
+        </div>
+      </div>
+
+      <div class="suggestions" id="suggestions">
+        <div class="suggestion" onclick="suggest(this)">30 kg payload, 18 m/s, 500 m</div>
+        <div class="suggestion" onclick="suggest(this)">50 kg surveillance drone at 1000 m</div>
+        <div class="suggestion" onclick="suggest(this)">5 kg endurance UAV, 60 km/h cruise</div>
+        <div class="suggestion" onclick="suggest(this)">Optimise with bayesian, 40 calls</div>
+        <div class="suggestion" onclick="suggest(this)">What aspect ratio should I use?</div>
+      </div>
+
+      <div class="input-area">
+        <textarea id="user-input" rows="1"
+          placeholder="Describe your mission..."
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"></textarea>
+        <button id="send-btn" onclick="sendMessage()" title="Send (Enter)">&#9654;</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../statics/index.js"></script>
+  </body>
+  </html>

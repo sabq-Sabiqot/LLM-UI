@@ -1,0 +1,7 @@
+lms ls                              # show downloaded models
+lms load deepseek-r1-0528-qwen3-8b  # load a model into memory
+lms server start                    # start server on port 1234
+lms server stop                     # stop server
+lms server status                   # check if running
+lms ps                              # show currently loaded models
+lms unload --all                    # free memory

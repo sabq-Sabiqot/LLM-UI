@@ -1,0 +1,442 @@
+/* ==========================================================================
+   index.css  --  UAV Mission Designer UI
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0f1117;
+  color: #e0e0e0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+header {
+  background: #1a1d27;
+  border-bottom: 1px solid #2a2d3e;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+header p {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Session badge */
+.session-badge {
+  font-size: 0.72rem;
+  color: #555;
+  background: #1e2130;
+  border: 1px solid #2a2d3e;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: monospace;
+}
+
+/* LLM status indicator */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #555;
+  flex-shrink: 0;
+}
+
+.status-dot.online {
+  background: #4caf50;
+  box-shadow: 0 0 6px #4caf5088;
+}
+
+.status-dot.offline {
+  background: #f44336;
+}
+
+.status-text {
+  font-size: 0.78rem;
+  color: #666;
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+
+.sidebar {
+  width: 280px;
+  background: #1a1d27;
+  border-right: 1px solid #2a2d3e;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-title {
+  padding: 14px 16px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #2a2d3e;
+}
+
+.param-table {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 16px;
+  font-size: 0.78rem;
+  transition: background 0.15s;
+}
+
+.param-row:hover {
+  background: #22253a;
+}
+
+.param-key {
+  color: #a0a8c0;
+}
+
+.param-value {
+  color: #7ec8e3;
+  font-weight: 500;
+  font-family: monospace;
+}
+
+.param-value.unset {
+  color: #444;
+  font-style: italic;
+}
+
+/* Run pipeline button */
+.run-btn {
+  margin: 12px;
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: none;
+}
+
+.run-btn:hover {
+  background: #1d4ed8;
+}
+
+.run-btn.visible {
+  display: block;
+}
+
+.run-btn:disabled {
+  background: #374151;
+  cursor: not-allowed;
+}
+
+/* Reset button */
+.reset-btn {
+  margin: 0 12px 12px;
+  padding: 7px;
+  background: transparent;
+  color: #666;
+  border: 1px solid #2a2d3e;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.reset-btn:hover {
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+/* ==========================================================================
+   Chat area
+   ========================================================================== */
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Message bubbles */
+.msg {
+  max-width: 80%;
+  line-height: 1.55;
+  font-size: 0.88rem;
+}
+
+.msg.user {
+  align-self: flex-end;
+  background: #2563eb;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 16px 16px 4px 16px;
+}
+
+.msg.assistant {
+  align-self: flex-start;
+  background: #1e2130;
+  border: 1px solid #2a2d3e;
+  padding: 12px 16px;
+  border-radius: 4px 16px 16px 16px;
+}
+
+.msg.system {
+  align-self: center;
+  background: transparent;
+  color: #555;
+  font-size: 0.75rem;
+  text-align: center;
+  font-style: italic;
+  border: none;
+  padding: 0;
+}
+
+.msg.error {
+  align-self: flex-start;
+  background: #2d1515;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.msg pre {
+  background: #0f1117;
+  border: 1px solid #2a2d3e;
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  color: #a0c0e0;
+  white-space: pre-wrap;
+}
+
+/* Ready-to-run badge */
+.ready-badge {
+  display: inline-block;
+  background: #14532d;
+  color: #4ade80;
+  border: 1px solid #166534;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* Pipeline result card */
+.result-card {
+  background: #0f1117;
+  border: 1px solid #2563eb44;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 0.80rem;
+}
+
+.result-card .result-title {
+  color: #7ec8e3;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+}
+
+.result-card .result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  color: #a0a8c0;
+}
+
+.result-card .result-row span:last-child {
+  color: #e0e0e0;
+  font-family: monospace;
+}
+
+/* ==========================================================================
+   Typing indicator
+   ========================================================================== */
+
+.typing {
+  align-self: flex-start;
+  display: flex;
+  gap: 5px;
+  padding: 10px 14px;
+  background: #1e2130;
+  border: 1px solid #2a2d3e;
+  border-radius: 4px 16px 16px 16px;
+}
+
+.typing span {
+  width: 7px;
+  height: 7px;
+  background: #555;
+  border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%           { transform: translateY(-6px); background: #7ec8e3; }
+}
+
+/* ==========================================================================
+   Input area
+   ========================================================================== */
+
+.input-area {
+  padding: 16px 24px;
+  border-top: 1px solid #2a2d3e;
+  background: #1a1d27;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+#user-input {
+  flex: 1;
+  background: #0f1117;
+  border: 1px solid #2a2d3e;
+  border-radius: 10px;
+  color: #e0e0e0;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  resize: none;
+  min-height: 42px;
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+#user-input:focus {
+  border-color: #2563eb;
+}
+
+#user-input::placeholder {
+  color: #444;
+}
+
+#send-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  width: 40px;
+  height: 42px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+#send-btn:hover    { background: #1d4ed8; }
+#send-btn:disabled { background: #374151; cursor: not-allowed; }
+
+/* ==========================================================================
+   Suggestion chips
+   ========================================================================== */
+
+.suggestions {
+  padding: 0 24px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suggestion {
+  background: #1e2130;
+  border: 1px solid #2a2d3e;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  color: #a0a8c0;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.suggestion:hover {
+  background: #2a2d3e;
+  color: #e0e0e0;
+  border-color: #4a4d5e;
+}
+
+/* ==========================================================================
+   Scrollbar
+   ========================================================================== */
+
+::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #2a2d3e; border-radius: 3px; }

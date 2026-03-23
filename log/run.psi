@@ -1,0 +1,5 @@
+lms load deepseek-r1-0528-qwen3-8b
+lms server start
+python main.py
+lms server status
+lms ps
