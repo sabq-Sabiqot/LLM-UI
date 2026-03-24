@@ -211,20 +211,77 @@ MISSION_SCHEMA = {
 # SYSTEM PROMPT
 # =============================================================================
 
-_SYSTEM_PROMPT = """You are a UAV design assistant. Extract mission parameters and reply in JSON.
+_SYSTEM_PROMPT = """You are a UAV aerodynamic design assistant.
 
-RULES:
-- Only include params the user mentioned. Use null for unknown.
-- Convert units automatically: km/h/3.6=m/s, knots*0.5144=m/s, ft*0.3048=m, lb*0.4536=kg
+Your only job is to extract UAV mission parameters from the user message and return valid JSON.
 
-PARAMS: payload_kg, cruise_speed(m/s), altitude_m, reynolds, mach, alpha(deg),
-airfoil_method(naca4/cst/parsec), optimize(bool), optimizer(bayesian/genetic),
-objective(breguet/max_LD/max_CL/min_CD), n_calls(int), AR(float)
+STEP 1 - Read the user message and find these parameters if mentioned:
+  payload_kg      : payload mass in kg
+  cruise_speed    : airspeed in m/s  (convert: km/h divide by 3.6, knots multiply by 0.5144)
+  altitude_m      : altitude in metres  (convert: ft multiply by 0.3048)
+  reynolds        : Reynolds number
+  mach            : Mach number
+  alpha           : angle of attack in degrees
+  airfoil_method  : one of naca4, cst, parsec
+  optimize        : true or false
+  optimizer       : one of bayesian, genetic
+  objective       : one of breguet, max_LD, max_CL, min_CD
+  n_calls         : integer number of optimiser evaluations
+  AR              : wing aspect ratio as a number
 
-ALWAYS reply with this exact JSON format (no extra text before it):
-{"message":"your reply","params":{"payload_kg":30.0,"cruise_speed":18.0},"ready_to_run":true}
+STEP 2 - Build the params object using ONLY values the user mentioned.
+  Do NOT include parameters the user did not mention.
+  Do NOT use placeholder text. Use real numbers only.
 
-Set ready_to_run=true only when you have at least payload_kg AND cruise_speed.
+STEP 3 - Reply with this JSON structure and nothing else:
+  {
+    "message": "write a short friendly reply here",
+    "params": {
+      "payload_kg": 50.0,
+      "altitude_m": 1000.0
+    },
+    "ready_to_run": false
+  }
+
+  Set ready_to_run to true only when BOTH payload_kg AND cruise_speed are known.
+
+EXAMPLE - if user says "50 kg drone at 1000 m altitude":
+  {
+    "message": "Got it! I have your payload and altitude. What is the cruise speed?",
+    "params": {
+      "payload_kg": 50.0,
+      "altitude_m": 1000.0
+    },
+    "ready_to_run": false
+  }
+
+EXAMPLE - if user says "30 kg payload, 18 m/s, 500 m altitude":
+  {
+    "message": "All minimum parameters received. Ready to run the UAV pipeline.",
+    "params": {
+      "payload_kg": 30.0,
+      "cruise_speed": 18.0,
+      "altitude_m": 500.0
+    },
+    "ready_to_run": true
+  }
+
+EXAMPLE - if user says "50 kg surveillance drone at 1000 m":
+  {
+    "message": "Got it! I have your payload and altitude. What cruise speed do you need?",
+    "params": {
+      "payload_kg": 50.0,
+      "altitude_m": 1000.0
+    },
+    "ready_to_run": false
+  }
+
+CRITICAL RULES:
+  - params must ALWAYS contain the values the user mentioned as real numbers.
+  - NEVER write "params": , -- that is invalid JSON and will crash the system.
+  - NEVER write "params": null -- use "params": {} if truly nothing was mentioned.
+  - NEVER copy example text verbatim. Replace with real numbers from the user message.
+  - The JSON must be valid and parseable. Test it mentally before writing.
 """
 
 # =============================================================================
@@ -510,7 +567,14 @@ class LLMConnector:
             raw          : full raw LLM response text
             error        : error type string if something went wrong
         """
-        self.history.append({"role": "user", "content": user_message})
+        # Append /no_think to disable Qwen3 chain-of-thought per turn.
+        # This forces the model to reply directly in JSON without a <think> block.
+        # For non-Qwen models this suffix is harmless -- they ignore it.
+        user_with_hint = user_message.strip()
+        if not user_with_hint.endswith("/no_think"):
+            user_with_hint = user_with_hint + " /no_think"
+
+        self.history.append({"role": "user", "content": user_with_hint})
 
         try:
             raw = self._call(self.history)
@@ -637,13 +701,45 @@ class LLMConnector:
 # RESPONSE PARSER
 # =============================================================================
 
+def _sanitise_json(text: str) -> str:
+    """
+    Fix common malformed JSON patterns produced by small LLMs.
+
+    Patterns fixed:
+      "params":,          -> "params": {}
+      "params": ,         -> "params": {}
+      "params":null,      -> "params": {}
+      "params": null,     -> "params": {}
+      "ready_to_run":,    -> "ready_to_run": false
+      trailing commas     -> removed before closing brace/bracket
+      "message":"your reply"  -> "message": "I need more information."
+    """
+    # Fix "params": null,  ->  "params": {},
+    # Fix "params": ,      ->  "params": {},
+    # The replacement includes the trailing comma to avoid double-commas
+    text = re.sub(r'"params"\s*:\s*null\s*,', '"params": {},', text)
+    text = re.sub(r'"params"\s*:\s*,',         '"params": {},', text)
+    # Fix "ready_to_run": ,  ->  "ready_to_run": false
+    text = re.sub(r'"ready_to_run"\s*:\s*,', '"ready_to_run": false,', text)
+    # Remove double commas produced by replacements above
+    text = re.sub(r',\s*,', ',', text)
+    # Remove trailing commas before } or ]
+    text = re.sub(r',\s*([}\]])', r'\1', text)
+    # Fix literal placeholder messages
+    text = text.replace('"your reply"',                    '"I need more information."')
+    text = text.replace('"write a short friendly reply here"', '"I need more information."')
+    return text
+
+
 def _parse_llm_response(raw: str) -> dict:
     """
     Extract JSON from LLM response text.
-    Handles three patterns:
+
+    Handles four patterns:
       1. ```json { ... } ```  markdown code block
       2. { ... "params" ... } bare JSON with params key
       3. last { ... } block in response
+      4. malformed JSON repaired by _sanitise_json()
     """
     json_str = None
 
@@ -658,50 +754,67 @@ def _parse_llm_response(raw: str) -> dict:
         if m:
             json_str = m.group(1)
 
-    # Pattern 3: last { ... } block in response
+    # Pattern 3: find the OUTERMOST { ... } block that contains "params"
+    # Iterate forward (not reversed) so we get the enclosing object, not inner ones
     if not json_str:
-        for start in reversed(list(re.finditer(r"\{", raw))):
+        for start in re.finditer(r"\{", raw):
             candidate = raw[start.start():]
             depth = 0
+            end_idx = None
             for i, ch in enumerate(candidate):
                 if   ch == "{": depth += 1
                 elif ch == "}":
                     depth -= 1
                     if depth == 0:
-                        json_str = candidate[:i + 1]
+                        end_idx = i
                         break
-            if json_str:
-                break
+            if end_idx is not None:
+                block = candidate[:end_idx + 1]
+                # Only accept blocks that contain both "params" and "message"
+                if '"params"' in block and '"message"' in block:
+                    json_str = block
+                    break
 
     if json_str:
-        try:
-            data = json.loads(json_str)
+        # Pattern 4: try to parse, if it fails sanitise and retry
+        data = None
+        for attempt in (json_str, _sanitise_json(json_str)):
+            try:
+                data = json.loads(attempt)
+                break
+            except json.JSONDecodeError:
+                continue
 
+        if data is not None:
             # Build a clean readable message
             msg = data.get("message", "")
-            if not msg or msg.strip().startswith("{"):
-                params = data.get("params", {})
+            placeholder_phrases = (
+                "your reply", "write a short", "I need more information"
+            )
+            if not msg or msg.strip().startswith("{") or                any(p in msg for p in placeholder_phrases):
+                params = data.get("params") or {}
                 if params:
                     parts = [f"{k} = {v}" for k, v in params.items()]
                     msg = "Got it! Extracted: " + ", ".join(parts) + "."
                 else:
+                    # try to pull text before the JSON block
                     msg = raw.replace(json_str, "").strip()
             if not msg:
                 msg = "Parameters extracted."
 
+            params = data.get("params") or {}   # handle null params
             return {
                 "message"      : msg,
-                "params"       : _validate_params(data.get("params", {})),
+                "params"       : _validate_params(params),
                 "ready_to_run" : bool(data.get("ready_to_run", False)),
                 "raw"          : raw,
             }
-        except json.JSONDecodeError:
-            pass
 
-    # Fallback: no JSON found -- return raw text and try regex extraction
+    # Fallback: no valid JSON at all -- use regex extraction on raw text
+    extracted = _extract_params_from_text(raw)
     return {
-        "message"      : raw,
-        "params"       : _extract_params_from_text(raw),
+        "message"      : raw if raw else "Could not parse response.",
+        "params"       : extracted,
         "ready_to_run" : False,
         "raw"          : raw,
     }
@@ -817,7 +930,7 @@ def process_message(message    : str,
         )
 
         try:
-            from ...ML_Calculation.Airfoil_Prediction import POST_TRAIN
+            import POST_TRAIN
             pipeline_result = POST_TRAIN.run(mission)
             geo  = pipeline_result.get("geometry", {})
             reply += (
