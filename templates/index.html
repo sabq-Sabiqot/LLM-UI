@@ -3,7 +3,7 @@
   <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UAV Mission Designer</title>
+  <title>Designer</title>
 
   <link rel="stylesheet" type="text/css" href="../statics/index.css" >
 
@@ -12,7 +12,7 @@
 
   <header>
     <div>
-      <h1>UAV Mission Designer</h1>
+      <h1>Designer</h1>
       <p>Describe your mission in plain English &mdash; AI extracts the parameters</p>
     </div>
     <div class="header-right">
@@ -27,6 +27,7 @@
     <!-- ── Sidebar: live param display ── -->
     <aside class="sidebar">
       <div class="sidebar-title">Extracted Parameters</div>
+      <button class="param-row" id="param-btn1"onclick="copyText('param-table','param-btn1')">CODE</button>
       <div class="param-table" id="param-table">
         <div class="param-row">
           <span class="param-key">payload_kg</span>

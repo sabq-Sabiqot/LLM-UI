@@ -242,6 +242,30 @@ function buildResultCard(pipelineResult) {
 }
 
 // =============================================================================
+// Copy Text
+// =============================================================================
+
+function copyText(targetId, buttonId) {
+  const target = document.getElementById(targetId);
+  const copyBtn = document.getElementById(buttonId);
+  const textToCopy = target.innerText;
+
+  navigator.clipboard.writeText(textToCopy)
+    .then(() => {
+      // ubah teks tombol sebagai feedback
+      copyBtn.textContent = "Copied!";
+      // setelah 2 detik, kembalikan ke "Copy"
+      setTimeout(() => {
+        copyBtn.textContent = "Copy";
+      }, 2000);
+    })
+    .catch(err => {
+      console.error("Failed to copy: ", err);
+    });
+}
+
+
+// =============================================================================
 // Reset conversation
 // =============================================================================
 
@@ -344,3 +368,4 @@ function escHtml(str) {
     .replace(/"/g,  "&quot;")
     .replace(/\n/g, "<br>");
 }
+

@@ -1,5 +1,5 @@
 """
-CONNECTION.py
+llm_mission.py
 ==============
 Connects a natural language mission description to the UAV design pipeline.
 
@@ -242,7 +242,16 @@ def _strip_think(content: str) -> str:
 def _check_content(data: dict, model: str) -> str:
     """
     Defensive content extraction from an OpenAI-compatible response dict.
-    Raises ValueError with a clear message if the response is empty.
+
+    LM Studio with Qwen3 splits the response into two fields:
+      content          -- the actual reply (what we want)
+      reasoning_content -- the <think> chain-of-thought block
+
+    When finish_reason=length the model ran out of max_tokens while thinking,
+    leaving content empty. We fall back to reasoning_content in that case
+    and extract the JSON from it directly.
+
+    Raises ValueError with a clear message only if both fields are empty.
     """
     choices = data.get("choices", [])
     if not choices:
@@ -251,15 +260,37 @@ def _check_content(data: dict, model: str) -> str:
             f"  Model        : {model}\n"
             f"  Raw response : {str(data)[:300]}"
         )
-    content = choices[0].get("message", {}).get("content", "")
-    if not content:
-        raise ValueError(
-            f"LLM returned empty content.\n"
-            f"  Model         : {model}\n"
-            f"  finish_reason : {choices[0].get('finish_reason')}\n"
-            f"  Raw           : {str(data)[:300]}"
-        )
-    return content
+
+    message       = choices[0].get("message", {})
+    content       = message.get("content", "") or ""
+    reasoning     = message.get("reasoning_content", "") or ""
+    finish_reason = choices[0].get("finish_reason", "")
+
+    # Primary: use content if it has text
+    if content.strip():
+        return content.strip()
+
+    # Fallback: finish_reason=length means tokens ran out during thinking.
+    # The reasoning_content field contains the partial chain-of-thought.
+    # Try to extract a JSON block from it directly.
+    if reasoning.strip():
+        # Look for a JSON block inside the reasoning text
+        import re as _re
+        m = _re.search(r"\{.*?\}", reasoning, _re.DOTALL)
+        if m:
+            return m.group(0)
+        # No JSON found in reasoning -- return reasoning text so the
+        # parser can attempt regex extraction from natural language
+        return reasoning.strip()
+
+    # Both fields are empty -- raise a clear error
+    raise ValueError(
+        f"LLM returned empty content.\n"
+        f"  Model         : {model}\n"
+        f"  finish_reason : {finish_reason}\n"
+        f"  Tip: increase max_tokens or disable thinking mode\n"
+        f"  Raw           : {str(data)[:300]}"
+    )
 
 
 # =============================================================================
@@ -410,7 +441,8 @@ class LLMConnector:
             "model"      : self.model,
             "messages"   : messages,
             "temperature": 0.2,
-            "max_tokens" : 1024,   # large enough to fit <think> block + JSON
+            "max_tokens" : 2048,   # increased: Qwen3 think block needs ~1000
+                                   # tokens alone, then JSON needs ~200 more
             "stream"     : False,
         }
 
@@ -418,8 +450,10 @@ class LLMConnector:
         extra = {}
 
         # Disable Qwen3 thinking mode so output is short and JSON-only.
-        # If LM Studio version does not support this key it is silently ignored.
-        extra["thinking"] = {"type": "disabled"}
+        # "budget_tokens": 0 sets thinking token budget to zero (fastest).
+        # "type": "disabled" is the LM Studio / OpenAI-style flag.
+        # Both are sent -- whichever the server supports will take effect.
+        extra["thinking"] = {"type": "disabled", "budget_tokens": 0}
 
         # GPU offload -- RTX 3050 4GB: gpu_layers = -1 (all layers on GPU)
         if self.gpu_layers is not None:
@@ -728,7 +762,7 @@ def _extract_params_from_text(text: str) -> dict:
 def build_mission(llm_params : dict,
                   xfoil_path : str = r"./Xfoil6.99/xfoil.exe",
                   model_path : str = "uav_model.pkl",
-                  output_dir : str = "connect_output") -> dict:
+                  output_dir : str = "llm_mission_output") -> dict:
     """
     Merge LLM-extracted params with schema defaults to produce a complete
     POST_TRAIN-compatible mission dict.
@@ -759,7 +793,7 @@ def process_message(message    : str,
                     connector  : LLMConnector,
                     xfoil_path : str  = r"./Xfoil6.99/xfoil.exe",
                     model_path : str  = "uav_model.pkl",
-                    output_dir : str  = "connect_output",
+                    output_dir : str  = "llm_mission_output",
                     auto_run   : bool = False) -> dict:
     """
     Process one user message through the LLM and optionally run the pipeline.
@@ -879,7 +913,7 @@ if __name__ == "__main__":
             user_input, conn,
             xfoil_path = r"./Xfoil6.99/xfoil.exe",
             model_path = "uav_model.pkl",
-            output_dir = "connect_output",
+            output_dir = "llm_mission_output",
             auto_run   = False,
         )
 
